@@ -1,6 +1,5 @@
 __author__ = 'clx'
 #coding:utf-8
-
 from math import sqrt
 
 content = {'book1': {'subject': 5, 'grade': 3, 'volume': 2, 'publisher': 8},
