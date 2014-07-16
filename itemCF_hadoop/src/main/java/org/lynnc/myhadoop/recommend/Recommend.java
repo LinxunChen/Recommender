@@ -32,10 +32,10 @@ public class Recommend {
         path.put("Step5Output", path.get("Step1Input") + "/step5");
 
         Step1.run(path);
-//        Step2.run(path);
-//        Step3.run(path);
-//        Step4.run(path);
-//        Step5.run(path);
+        Step2.run(path);
+        Step3.run(path);
+        Step4.run(path);
+        Step5.run(path);
 
         System.exit(0);
     }
