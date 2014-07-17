@@ -4,13 +4,13 @@ import java.io.IOException;
 import java.util.*;
 
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
@@ -19,21 +19,45 @@ import org.lynnc.myhadoop.hdfs.HdfsOperator;
 /* Step5负责对step4的结果进行合并求和，预测每个用户对所有itemID的评分，并进行推荐 */
 public class Step5 {
 
-    /* map过程输入的是"userID itemID,预测评分“；输出的key是"userID"，value是"itemID,预测评分" */
+    /* step4的输出：map过程输入的是"userID itemID,预测评分“；输出的key是"userID"，value是"itemID,预测评分"
+    * step3_2的输出：map过程输入的是"userID   itemID1:评分，itemID2:评分，itemID3:评分"；输出的key是"userID"，value是"CitemID1:评分，itemID2:评分，itemID3:评分"*/
     public static class Step5_RecommendMapper extends Mapper<Object, Text, Text, Text> {
+        private String flag;// 标记，以区分
         private Text k = new Text();
         private Text v = new Text();
 
         @Override
+        protected void setup(Context context) throws IOException, InterruptedException {
+            FileSplit split = (FileSplit) context.getInputSplit();
+            flag = split.getPath().getParent().getName();// 判断读的数据集
+        }
+
+        @Override
         public void map(Object key, Text values, Context context) throws IOException, InterruptedException {
             String[] tokens = Recommend.DELIMITER.split(values.toString());
-            k.set(tokens[0]);
-            v.set(tokens[1]+","+tokens[2]);
-            context.write(k, v);
+
+            if (flag.equals("step4")) {
+                k.set(tokens[0]);
+                v.set(tokens[1]+","+tokens[2]);
+                context.write(k, v);
+            }
+
+            else if (flag.equals("step3_2")) {
+                k.set(tokens[0]);
+
+                StringBuilder sb = new StringBuilder();
+                for (int i=1; i<tokens.length; i++) {
+                    sb.append("," + tokens[i]);
+                }
+
+                v.set(sb.toString().replaceFirst(",", "C"));//添加C作为标记
+                context.write(k, v);
+            }
         }
     }
 
-    /* reduce过程输入的key是"userID"，value是"itemID1,预测评分"、"itemID1,预测评分""itemID2,预测评分""itemID3,预测评分"...（示例）
+    /* step4的输出：reduce过程输入的key是"userID"，value是"itemID1,预测评分"、"itemID1,预测评分""itemID2,预测评分""itemID3,预测评分"...（示例）（给用户计算推荐的物品）
+     step3_2的输出：reduce过程输入的key是"userID"，value是"CitemID1:评分，itemID2:评分，itemID3:评分"（用户已评分的物品）
     * 输出的key是"userID"，value是["itemID1:总预测评分，itemID2:总预测评分，itemID3:总预测评分"...]（示例）*/
     public static class Step5_RecommendReducer extends Reducer<Text, Text, Text, Text> {
         private Text v = new Text();
@@ -41,18 +65,30 @@ public class Step5 {
         @Override
         public void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
             Map<String, Double> map = new HashMap();
+            List<String> prefItems = new ArrayList<String>();
 
-            /* 将同一userID对同一itemID的预测评分进行求和，并将itemID和评分存在map中 */
+
             for (Text line : values) {
-                String[] tokens = Recommend.DELIMITER.split(line.toString());
-                String itemID = tokens[0];
-                Double score = Double.parseDouble(tokens[1]);
-
-                if (map.containsKey(itemID)) {
-                    map.put(itemID, map.get(itemID) + score);// 矩阵乘法求和计算
+                /* 得到用户key的行为记录列表list */
+                if (line.toString().startsWith("C")) {
+                    String[] tokens = Recommend.DELIMITER.split(line.toString().substring(1));
+                    for (int i=0; i<tokens.length; i++) {
+                        prefItems.add(tokens[i].split(":")[0]);
+                    }
                 }
+
+                /* 将同一userID对同一itemID的预测评分进行求和，并将itemID和评分存在map中 */
                 else {
-                    map.put(itemID, score);
+                    String[] tokens = Recommend.DELIMITER.split(line.toString());
+                    String itemID = tokens[0];
+                    Double score = Double.parseDouble(tokens[1]);
+
+                    if (map.containsKey(itemID)) {
+                        map.put(itemID, map.get(itemID) + score);// 矩阵乘法求和计算
+                    }
+                    else {
+                        map.put(itemID, score);
+                    }
                 }
             }
 
@@ -73,13 +109,12 @@ public class Step5 {
             /* 过滤newMap中该用户（即key）已经评价过的物品，得到最终的推荐列表 */
             List<String> recList = new ArrayList();
             for (String itemKey : newMap.keySet()) {
-                if (Step1.userItem.get(key.toString()).indexOf(itemKey) == -1) {
+                if (prefItems.indexOf(itemKey) == -1) {
                     recList.add(itemKey + ':' + newMap.get(itemKey));
                 }
             }
 
             v.set(recList.toString());
-
             context.write(key, v);
         }
     }
@@ -87,7 +122,8 @@ public class Step5 {
     public static void run(Map<String, String> path) throws IOException, InterruptedException, ClassNotFoundException {
         JobConf conf = Recommend.config();
 
-        String input = path.get("Step5Input");
+        String input1 = path.get("Step5Input1");
+        String input2 = path.get("Step5Input2");
         String output = path.get("Step5Output");
 
         HdfsOperator hdfs = new HdfsOperator(Recommend.HDFS, conf);
@@ -105,7 +141,7 @@ public class Step5 {
         job.setInputFormatClass(TextInputFormat.class);
         job.setOutputFormatClass(TextOutputFormat.class);
 
-        FileInputFormat.setInputPaths(job, new Path(input));
+        FileInputFormat.setInputPaths(job, new Path(input1), new Path(input2));
         FileOutputFormat.setOutputPath(job, new Path(output));
 
         job.waitForCompletion(true);

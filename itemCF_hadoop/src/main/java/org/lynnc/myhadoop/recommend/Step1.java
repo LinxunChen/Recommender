@@ -22,7 +22,7 @@ import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.hadoop.mapred.TextOutputFormat;
 import org.lynnc.myhadoop.hdfs.HdfsOperator;
 
-/* Step1 负责生成每个用户对物品的评分矩阵，即“userID   itemID:评分” */
+/* Step1 负责生成每个用户对其所有评价物品的评分矩阵，即“userID   itemID1:评分，itemID2:评分，itemID3:评分” */
 public class Step1 {
 
     /* map过程输入的是文件内容; 输出的key为userID，value为"itemID:评分" */
@@ -33,11 +33,6 @@ public class Step1 {
         @Override
         public void map(Object key, Text value, OutputCollector<IntWritable, Text> output, Reporter reporter) throws IOException {
             String[] tokens = Recommend.DELIMITER.split(value.toString());
-//            int itemID = Integer.parseInt(tokens[1]);
-//            String userID = tokens[0];
-//            String pref = tokens[2];
-//            k.set(itemID);
-//            v.set(userID + ":" + pref);
             int userID = Integer.parseInt(tokens[0]);
             String itemID = tokens[1];
             String pref = tokens[2];

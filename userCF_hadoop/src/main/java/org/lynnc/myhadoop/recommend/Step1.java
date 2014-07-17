@@ -19,8 +19,10 @@ import java.io.IOException;
 import java.nio.file.FileSystemNotFoundException;
 import java.util.*;
 
+/* Step1 负责生成不同用户对同一物品的评分矩阵，即“itemID   userID1:评分，userID2:评分，userID3:评分” */
 public class Step1 {
 
+    /* map过程输入的是文件内容; 输出的key为itemID，value为"userID:评分" */
     public static class Step1_ItemVectorMapper extends Mapper<Object, Text, IntWritable, Text> {
         private IntWritable k = new IntWritable();
         private Text v = new Text();
@@ -34,11 +36,11 @@ public class Step1 {
 
             k.set(itemID);
             v.set(userID + ":" + pref);
-
             context.write(k, v);
         }
     }
 
+    /* reduce过程输入的key为itemID，value为"userID1:评分"、"userID2:评分"、"userID3:评分"...; 输出的key为itemID，value为"userID1:评分,userID2:评分,userID3:评分..." */
     public static class Step1_ItemVectorReducer extends Reducer<IntWritable, Text, IntWritable, Text> {
         private Text v = new Text();
 
@@ -49,29 +51,11 @@ public class Step1 {
                 sb.append("," + values.iterator().next());
             }
             v.set(sb.toString().replaceFirst(",", ""));
-
             context.write(key, v);
         }
     }
 
-    public static Map<String, List> userItem = new HashMap<String, List>();//定义一个静态的hashmap来记录每个用户对哪些物品有过评价行为
-
     public static void run(Map<String, String> path) throws FileSystemNotFoundException, IOException, InterruptedException, ClassNotFoundException {
-
-        /* userItem记录每个用户对哪些物品有过评价行为 */
-        BufferedReader br = new BufferedReader(new FileReader(path.get("data")));
-        String temp = null;
-        while((temp=br.readLine())!=null) {
-            String[] tokens = Recommend.DELIMITER.split(temp);
-            if (userItem.containsKey(tokens[0])) {
-                userItem.get(tokens[0]).add(tokens[1]);
-            }
-            else{
-                List<String> itemList = new ArrayList();
-                userItem.put(tokens[0], itemList);
-                itemList.add(tokens[1]);
-            }
-        }
 
         JobConf conf = Recommend.config();
 

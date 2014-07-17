@@ -18,8 +18,11 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+/* Step4负责从单个itemID的视角下，预测对该物品有评价的用户给所有itemID的评分 */
 public class Step4 {
 
+    /* 倒排后的评分矩阵：map过程输入的是"userID  itemID:评分"; 输出的key是"userID"，value是“B:itemID,评分”
+    *  相似度矩阵：map过程输入的是"userID1:userID2 相似度“; 输出的key是"userID"，value是“A:userID,相似度”*/
     public static class Step4_PartialMultiplyMapper extends Mapper<Object, Text, Text, Text> {
         private String flag;// 标记，以区分相似度矩阵or评分矩阵
         private Text k = new Text();
@@ -43,10 +46,9 @@ public class Step4 {
 
                 k.set(userID1);
                 v.set("A:" + userID2 + "," + num);
-
                 context.write(k, v);
 
-            } else if (flag.equals("step3")) {// flag为step3则输入的为评分矩阵，接下来标记为B
+            } else if (flag.equals("step3_1")) {// flag为step3_1则输入的为评分矩阵，接下来标记为B
                 String[] v2 = tokens[1].split(":");
                 String userID = tokens[0];
                 String itemID = v2[0];
@@ -54,15 +56,14 @@ public class Step4 {
 
                 k.set(userID);
                 v.set("B:" + itemID + "," + pref);
-
                 context.write(k, v);
             }
         }
 
     }
 
-    /* 倒排后的评分矩阵：reduce过程输入的key是"itemID"，value是“B:userID1,评分”、“B:userID2,评分”、“B:userID3,评分”...;
-    *  相似度矩阵：reduce过程输入的key是"itemID"，value是“A:itemID1,相似度”、“A:itemID2,相似度”、“A:itemID3,相似度”...;
+    /* 倒排后的评分矩阵：reduce过程输入的key是"userID"，value是“B:itemID1,评分”、“B:itemID2,评分”、“B:itemID3,评分”...;
+    *  相似度矩阵：reduce过程输入的key是"userID"，value是“A:userID1,相似度”、“A:userID2,相似度”、“A:userID3,相似度”...;
     *  reduce输出的key是"userID"，value是”itemID,预测评分“*/
     public static class Step4_AggregateReducer extends Reducer<Text, Text, Text, Text> {
         private Text k = new Text();
@@ -70,8 +71,8 @@ public class Step4 {
 
         @Override
         public void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
-            Map<String, String> mapA = new HashMap();//key:itemID,value:同现次数
-            Map<String, String> mapB = new HashMap();//key:userID,value:评分
+            Map<String, String> mapA = new HashMap();//key:userID,value:同现次数
+            Map<String, String> mapB = new HashMap();//key:itemID,value:评分
 
             for (Text line : values) {
                 String val = line.toString();
@@ -84,22 +85,20 @@ public class Step4 {
                 }
             }
 
-            /* 对于每个userID，计算它对此itemID（也就是key）的评分与此itemID和其他所有itemID（包含自己）的相似度的乘积，即从此itemID的视角下预测该用户对所有itemID的评分 */
             double result = 0;
             Iterator<String> iter = mapA.keySet().iterator();
 
             while (iter.hasNext()) {
-                String similarUser = iter.next();// 遍历与此itemID（也就是key）具有一定相似度的itemID（自己也包含了）
+                String similarUser = iter.next();// 遍历与此userID（也就是key）具有一定相似度的userID（自己也包含了）
                 int similarity = Integer.parseInt(mapA.get(similarUser));
                 Iterator<String> iterb = mapB.keySet().iterator();
                 while (iterb.hasNext()) {
-                    String prefItem = iterb.next();// userID
+                    String prefItem = iterb.next();// itemID
                     double pref = Double.parseDouble(mapB.get(prefItem));
                     result = similarity * pref;// 矩阵乘法相乘计算
 
                     k.set(similarUser);
                     v.set(prefItem + "," + result);
-
                     context.write(k, v);
                 }
             }

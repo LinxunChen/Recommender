@@ -19,8 +19,10 @@ import java.nio.file.FileSystemNotFoundException;
 import java.util.Iterator;
 import java.util.Map;
 
+/* Step2 负责生成用户的同现矩阵（也可看作相似度矩阵） */
 public class Step2 {
 
+    /* map过程输入的是itemID "userID1:评分,userID2:评分,userID3:评分..."; 输出的key是"userID1:userID2"、"userID2:userID3"、"userID1:userID3"...，value是1 */
     public static class Step2_UserCooccurrenceMapper extends Mapper<Object, Text, Text, IntWritable> {
         private Text k = new Text();
         private IntWritable v = new IntWritable(1);
@@ -39,6 +41,7 @@ public class Step2 {
         }
     }
 
+    /* reduce过程输入的key是"userID1:userID2"，value是1，1，1; 输出的key是"userID1:userID2"，value是3 （示例） */
     public static class Step2_UserCooccurrenceReducer extends Reducer<Text, IntWritable, Text, IntWritable> {
         private IntWritable v = new IntWritable();
 
@@ -49,7 +52,6 @@ public class Step2 {
                 sum += values.iterator().next().get();
             }
             v.set(sum);
-
             context.write(key, v);
         }
     }

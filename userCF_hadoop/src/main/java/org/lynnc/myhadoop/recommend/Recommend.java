@@ -16,7 +16,7 @@ public class Recommend {
     public static void main( String[] args ) throws InterruptedException, ClassNotFoundException, IOException{
         Map<String, String> path = new HashMap();
 
-        path.put("data", "/home/lynnc/ua.base");
+        path.put("data", "/home/lynnc/small.csv");
         path.put("Step1Input", HDFS + "/user/lynnc/recommend");
         path.put("Step1Output", path.get("Step1Input") + "/step1");
 
@@ -24,13 +24,15 @@ public class Recommend {
         path.put("Step2Output", path.get("Step1Input") + "/step2");
 
         path.put("Step3Input", path.get("Step1Output"));
-        path.put("Step3Output", path.get("Step1Input") + "/step3");
+        path.put("Step3Output1", path.get("Step1Input") + "/step3_1");
+        path.put("Step3Output2", path.get("Step1Input") + "/step3_2");
 
-        path.put("Step4Input1", path.get("Step3Output"));
+        path.put("Step4Input1", path.get("Step3Output1"));
         path.put("Step4Input2", path.get("Step2Output"));
         path.put("Step4Output", path.get("Step1Input") + "/step4");
 
-        path.put("Step5Input", path.get("Step4Output"));
+        path.put("Step5Input1", path.get("Step4Output"));
+        path.put("Step5Input2", path.get("Step3Output2"));
         path.put("Step5Output", path.get("Step1Input") + "/step5");
 
         Step1.run(path);
