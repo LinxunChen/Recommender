@@ -22,7 +22,7 @@ public class Step5 {
     /* step4的输出：map过程输入的是"userID itemID,预测评分,相似度“；输出的key是"userID"，value是"itemID,预测评分,相似度"
     * step2_2的输出：map过程输入的是"userID   itemID1:评分，itemID2:评分，itemID3:评分"；输出的key是"userID"，value是"CitemID1:评分，itemID2:评分，itemID3:评分"*/
     public static class Step5_RecommendMapper extends Mapper<Object, Text, Text, Text> {
-        private String flag;// 标记，以区分
+        private String flag;// 标记，以区分不同的输入
         private Text k = new Text();
         private Text v = new Text();
 
@@ -58,7 +58,7 @@ public class Step5 {
 
     /* step4的输出：reduce过程输入的key是"userID"，value是"itemID1,预测评分,相似度"、"itemID1,预测评分,相似度""itemID2,预测评分,相似度""itemID3,预测评分,相似度"...（示例）（给用户计算推荐的物品）
      step2_2的输出：reduce过程输入的key是"userID"，value是"CitemID1:评分，itemID2:评分，itemID3:评分"（用户已评分的物品）
-    * 输出的key是"userID"，value是"itemID1:总预测评分，itemID2:总预测评分，itemID3:总预测评分"...（示例）*/
+    * reduce输出的key是"userID"，value是"itemID1:总预测评分，itemID2:总预测评分，itemID3:总预测评分"...（示例）*/
     public static class Step5_RecommendReducer extends Reducer<Text, Text, Text, Text> {
         private Text v = new Text();
 
@@ -95,7 +95,7 @@ public class Step5 {
                         }
 
                         if (mapSim.containsKey(itemID)) {
-                            mapSim.put(itemID, mapSim.get(itemID) + sim);// 矩阵乘法求和计算
+                            mapSim.put(itemID, mapSim.get(itemID) + sim);
                         }
                         else {
                             mapSim.put(itemID, sim);
@@ -107,7 +107,9 @@ public class Step5 {
             /* 计算最终的推荐评分，并过滤map中该用户（即key）已经评价过的物品 */
             for (String itemID : mapResult.keySet()) {
                 if (prefItems.indexOf(itemID) == -1) {
+                    //System.out.println(mapResult.get(itemID)/mapSim.get(itemID));
                     map.put(itemID, Math.round((mapResult.get(itemID)/mapSim.get(itemID))*10000)/10000.0 );
+                    //System.out.println(map.get(itemID));
                 }
             }
 

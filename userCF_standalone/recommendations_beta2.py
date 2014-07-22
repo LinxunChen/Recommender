@@ -28,7 +28,7 @@ critics={'Lisa Rose': {'Lady in the Water': 2.5, 'Snakes on a Plane': 3.5,
  'The Night Listener': 3.0, 'Superman Returns': 5.0, 'You, Me and Dupree': 3.5},
 'Toby': {'Snakes on a Plane':4.5,'You, Me and Dupree':1.0,'Superman Returns':4.0}}
 
-criticsTest = {'Toby':{'The Night Listener':2.34779+2.5, 'Lady in the Water':1.83255+1.5,  'Just My Luck': 3.53098-0.5}, 'Claudia Puig':{'Lady in the Water':3.68007-0.5}}
+criticsTest = {'Toby':{'The Night Listener':2, 'Lady in the Water':3,  'Just My Luck': 4}, 'Claudia Puig':{'Lady in the Water':3}}
 
 
 def simDistance(prefs, person1, person2):
@@ -223,6 +223,33 @@ def loadData(dataSegNum, expOrder, path=r'E:\USTC\2.Recommendation System\ml-100
         prefsTest[user][movies[movieid]] = float(rating)
     return [prefsTrain, prefsTest]
 
+def loadDataFromTwo( path=r'E:\USTC\2.Recommendation System\ml-100k' ):
+    global COUNTER
+    COUNTER = 0
+    train = []
+    test = []
+    movies = {}
+    prefsTrain = {}
+    prefsTest = {}
+    for line in open(path+r'\u.item'):
+        (id, title) = line.split('|')[0:2]
+        movies[id] = title
+
+    for line in open(path+r'\ua.base'):
+        (user, movieid, rating) = line.split('\t')[0:3]
+        train.append([user,movieid,rating])
+    for line in open(path+r'\ua.test'):
+        (user, movieid, rating) = line.split('\t')[0:3]
+        test.append([user,movieid,rating])
+
+    for user,movieid,rating in train:
+        prefsTrain.setdefault(user,{})
+        prefsTrain[user][movies[movieid]] = float(rating)
+    for user,movieid,rating in test:
+        prefsTest.setdefault(user,{})
+        prefsTest[user][movies[movieid]] = float(rating)
+    return [prefsTrain, prefsTest]
+
 def eachEval(prefs,transPrefs, person, test, n, topN, similarity=simPearson):
     trainTemp = getRecommendations(prefs,transPrefs, person, n, similarity)
     train = {}
@@ -289,30 +316,30 @@ def evaluate(prefs,transPrefs,test, n, topN=20, similarity=simPearson):
     return [RMSE, F1, precision, recall]
 
 if __name__ == "__main__":
-    '''下面是完整评测功能：'''
-    dataSegNum = 8
-    nTest = [510,520,530,540,550,560,580,600,620,640,660,680,700,720,740,760,780,800]
-    for n in nTest:
-        RMSE = 0
-        F1 = 0
-        recall = 0
-        precision = 0
-        for expOrder in range(dataSegNum):
-            (prefsTrain, prefsTest) = loadData(dataSegNum, expOrder)
-            transPrefs = transformPrefs(prefsTrain)
-            (RMSEEach, F1Each, precisionEach, recallEach) = evaluate(prefsTrain,transPrefs,prefsTest, n, 10, simPearson)
-            RMSE += RMSEEach
-            F1 += F1Each
-            precision += precisionEach
-            recall += recallEach
-        print [RMSE/dataSegNum, F1/dataSegNum, precision/dataSegNum, recall/dataSegNum]
+    # '''下面是完整评测功能：'''
+    # dataSegNum = 8
+    # nTest = [510,520,530,540,550,560,580,600,620,640,660,680,700,720,740,760,780,800]
+    # for n in nTest:
+    #     RMSE = 0
+    #     F1 = 0
+    #     recall = 0
+    #     precision = 0
+    #     for expOrder in range(dataSegNum):
+    #         (prefsTrain, prefsTest) = loadData(dataSegNum, expOrder)
+    #         transPrefs = transformPrefs(prefsTrain)
+    #         (RMSEEach, F1Each, precisionEach, recallEach) = evaluate(prefsTrain,transPrefs,prefsTest, n, 10, simPearson)
+    #         RMSE += RMSEEach
+    #         F1 += F1Each
+    #         precision += precisionEach
+    #         recall += recallEach
+    #     print [RMSE/dataSegNum, F1/dataSegNum, precision/dataSegNum, recall/dataSegNum]
 
-    # '''下面是单次评测功能：'''
+    '''下面是单次评测功能：'''
     # dataSegNum = 8
     # expOrder = 7
-    # (prefsTrain, prefsTest) = loadData(dataSegNum, expOrder)
-    # transPrefs = transformPrefs(prefsTrain)
-    # print evaluate(prefsTrain,transPrefs,prefsTest, 320, 10, simCosine)
+    (prefsTrain, prefsTest) = loadDataFromTwo()
+    transPrefs = transformPrefs(prefsTrain)
+    print evaluate(prefsTrain,transPrefs,prefsTest, 1000, 10, simDistance)
 
     # '''下面是推荐功能：'''
     # dataSegNum = 8
@@ -325,4 +352,5 @@ if __name__ == "__main__":
     # prefsTrain = critics
     # prefsTest = criticsTest
     # transPrefs = transformPrefs(prefsTrain)
-    # print getRecommendations(prefsTrain,transPrefs, 'Toby', 320, similarity=simCosine)[0:10]
+    # print getRecommendations(prefsTrain,transPrefs, 'Toby', 320, similarity=simDistance)[0:10]
+    # print evaluate(prefsTrain,transPrefs,prefsTest, 320, 10, simDistance)

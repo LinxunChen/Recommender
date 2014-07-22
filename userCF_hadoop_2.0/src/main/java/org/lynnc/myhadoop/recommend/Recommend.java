@@ -13,14 +13,15 @@ public class Recommend {
     public static final String HDFS = "hdfs://localhost:9000";
     public static final Pattern DELIMITER = Pattern.compile("[\t,]");
 
-    public static double simThreshold = 0.6; //用户邻域相似度的阈值
+    public static double simThreshold = 0.0; //用户邻域相似度的阈值 [0,1]
     public static int RecNum = 20;  //推荐物品的数量
-    public static String Person = "1";  //显示该用户的推荐列表
+    public static String Person = "7";  //显示该用户的推荐列表
 
     public static void main( String[] args ) throws InterruptedException, ClassNotFoundException, IOException{
         Map<String, String> path = new HashMap();
 
-        path.put("data", "/home/lynnc/ua.base");
+        path.put("Trainning set", "/home/lynnc/ua.base");
+        path.put("Testing set", "/home/lynnc/ua.test");
         path.put("Step1Input", HDFS + "/user/lynnc/recommend");
         path.put("Step1Output", path.get("Step1Input") + "/step1");
 
@@ -42,12 +43,17 @@ public class Recommend {
         path.put("Step6Input", path.get("Step5Output"));
         path.put("Step6Output", path.get("Step1Input") + "/step6");
 
+        path.put("EvaluateInput1", HDFS + "/user/lynnc/recommend/test");
+        path.put("EvaluateInput2", path.get("Step5Output"));
+        path.put("EvaluateOutput", path.get("Step1Input") + "/evalStep1");
+
         Step1.run(path);
         Step2.run(path);
         Step3.run(path);
         Step4.run(path);
         Step5.run(path);
         Step6.run(path);
+        Evaluate.run(path);
 
         System.exit(0);
     }

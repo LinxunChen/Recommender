@@ -47,8 +47,8 @@ public class Step4 {
                 k.set(userID1);
                 v.set("A:" + userID2 + "," + sim);
                 context.write(k, v);
-
-            } else if (flag.equals("step2_1")) {// flag为step3_1则输入的为评分矩阵，接下来标记为B
+            }
+            else if (flag.equals("step2_1")) {// flag为step3_1则输入的为评分矩阵，接下来标记为B
                 String[] v2 = tokens[1].split(":");
                 String userID = tokens[0];
                 String itemID = v2[0];

@@ -65,7 +65,7 @@ public class Step1 {
         HdfsOperator hdfs = new HdfsOperator(Recommend.HDFS, conf);
         hdfs.rmr(input);
         hdfs.mkdirs(input);
-        hdfs.copyFile(path.get("data"), input);
+        hdfs.copyFile(path.get("Trainning set"), input);
 
         Job job = new Job(conf);
         job.setJarByClass(Step1.class);

@@ -42,7 +42,7 @@ def simDistance(prefs, person1, person2):
 
     sum_of_quares = sum([pow(prefs[person1][item] - prefs[person2][item] , 2)
          for item in si])
-    return 1 / (1 + sum_of_quares)
+    return 1 / (1 + sqrt(sum_of_quares))
 
 def simPearson(prefs, p1, p2):
     si={}

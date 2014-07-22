@@ -18,6 +18,7 @@ import java.util.Map;
 /* Step6负责对step5推荐结果进行过滤，推荐前RecNum个物品 */
 public class Step6 {
 
+    /* map过程输入的是“userID     itemID1:总预测评分，itemID2:总预测评分，itemID3:总预测评分"; 输出的key是"userID"，value是"itemID1:总预测评分，itemID2:总预测评分，itemID3:总预测评分" */
     public static class Step6_RecommendFilterMapper extends Mapper<Object, Text, Text, Text> {
         private Text k = new Text();
         private Text v = new Text();
@@ -33,7 +34,7 @@ public class Step6 {
             }
 
             if (userID.equals(Recommend.Person)) {
-                System.out.println("给Person用户的推荐为：");
+                System.out.println("给Person用户的推荐为：  ");
                 System.out.println(userID + ":" + sb.toString().replaceFirst(",", ""));
             }
 
