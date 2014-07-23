@@ -113,7 +113,7 @@ public class Step5 {
                 }
             }
 
-            /* 对map进行按value的降序排序，得到newMap */
+            /* 对map进行按value的降序排序，得到orderedMap */
             ArrayList<Map.Entry<String, Double>> list = new ArrayList<Map.Entry<String, Double>>(map.entrySet());
             Collections.sort(list, new Comparator<Map.Entry<String, Double>>() {
                 @Override
@@ -122,14 +122,14 @@ public class Step5 {
                 }
             });
 
-            Map<String, Double> newMap = new LinkedHashMap();
+            Map<String, Double> orderedMap = new LinkedHashMap();
             for (int i = 0; i < list.size(); i++) {
-                newMap.put(list.get(i).getKey(), list.get(i).getValue());
+                orderedMap.put(list.get(i).getKey(), list.get(i).getValue());
             }
 
             StringBuilder sb = new StringBuilder();
-            for (String itemKey : newMap.keySet()) {
-                sb.append("," + itemKey + ':' + newMap.get(itemKey));
+            for (String itemKey : orderedMap.keySet()) {
+                sb.append("," + itemKey + ':' + orderedMap.get(itemKey));
             }
 
             v.set(sb.toString().replaceFirst(",", ""));

@@ -59,6 +59,7 @@ public class Evaluate {
      step5的输出：reduce过程输入的key是"userID"，value是"R:itemID1,预测评分"、"R:itemID2,预测评分"...
     * reduce统计求和，计算RMSE*/
     public static class EvaluateEachReducer extends Reducer<Text, Text, Text, Text> {
+        private Text k = new Text();
         private Text v = new Text();
 
         @Override
@@ -82,7 +83,11 @@ public class Evaluate {
                     count++;
                 }
             }
+            Double RMSE = Math.sqrt(sum/count);
 
+            k.set("RMSE ");
+            v.set(RMSE.toString());
+            context.write(k, v);
         }
     }
 
