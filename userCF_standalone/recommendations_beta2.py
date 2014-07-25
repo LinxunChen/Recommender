@@ -339,7 +339,7 @@ if __name__ == "__main__":
     # expOrder = 7
     (prefsTrain, prefsTest) = loadDataFromTwo()
     transPrefs = transformPrefs(prefsTrain)
-    print evaluate(prefsTrain,transPrefs,prefsTest, 1000, 10, simDistance)
+    print evaluate(prefsTrain,transPrefs,prefsTest, 1000, 20, simDistance)
 
     # '''下面是推荐功能：'''
     # dataSegNum = 8
