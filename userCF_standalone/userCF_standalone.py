@@ -7,8 +7,8 @@ import random
 # import cPickle as p
 import numpy
 
-COUNTER = 0
-simD = {}
+COUNTER = 0 #标记，COUNTER为1表示相似度矩阵已经计算完成，接下来不用再计算
+simD = {} #相似度矩阵（字典形式）
 
 # 此部分训练集和测试集为验证程序正确性使用
 # critics={'Lisa Rose': {'Lady in the Water': 2.5, 'Snakes on a Plane': 3.5,
