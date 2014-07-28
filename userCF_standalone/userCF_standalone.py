@@ -1,35 +1,35 @@
 __author__ = 'clx'
 #coding:utf-8
 from math import sqrt
-import time
+# import time
 import random
-import os
-import cPickle as p
+# import os
+# import cPickle as p
 import numpy
 
 COUNTER = 0
 simD = {}
 
 # 此部分训练集和测试集为验证程序正确性使用
-critics={'Lisa Rose': {'Lady in the Water': 2.5, 'Snakes on a Plane': 3.5,
- 'Just My Luck': 3.0, 'Superman Returns': 3.5, 'You, Me and Dupree': 2.5,
- 'The Night Listener': 3.0},
-'Gene Seymour': {'Lady in the Water': 3.0, 'Snakes on a Plane': 3.5,
- 'Just My Luck': 1.5, 'Superman Returns': 5.0, 'The Night Listener': 3.0,
- 'You, Me and Dupree': 3.5},
-'Michael Phillips': {'Lady in the Water': 2.5, 'Snakes on a Plane': 3.0,
- 'Superman Returns': 3.5, 'The Night Listener': 4.0},
-'Claudia Puig': {'Snakes on a Plane': 3.5, 'Just My Luck': 3.0,
- 'The Night Listener': 4.5, 'Superman Returns': 4.0,
- 'You, Me and Dupree': 2.5},
-'Mick LaSalle': {'Lady in the Water': 3.0, 'Snakes on a Plane': 4.0,
- 'Just My Luck': 2.0, 'Superman Returns': 3.0, 'The Night Listener': 3.0,
- 'You, Me and Dupree': 2.0},
-'Jack Matthews': {'Lady in the Water': 3.0, 'Snakes on a Plane': 4.0,
- 'The Night Listener': 3.0, 'Superman Returns': 5.0, 'You, Me and Dupree': 3.5},
-'Toby': {'Snakes on a Plane':4.5,'You, Me and Dupree':1.0,'Superman Returns':4.0}}
-
-criticsTest = {'Toby':{'The Night Listener':2, 'Lady in the Water':3,  'Just My Luck': 4}, 'Claudia Puig':{'Lady in the Water':3}}
+# critics={'Lisa Rose': {'Lady in the Water': 2.5, 'Snakes on a Plane': 3.5,
+#  'Just My Luck': 3.0, 'Superman Returns': 3.5, 'You, Me and Dupree': 2.5,
+#  'The Night Listener': 3.0},
+# 'Gene Seymour': {'Lady in the Water': 3.0, 'Snakes on a Plane': 3.5,
+#  'Just My Luck': 1.5, 'Superman Returns': 5.0, 'The Night Listener': 3.0,
+#  'You, Me and Dupree': 3.5},
+# 'Michael Phillips': {'Lady in the Water': 2.5, 'Snakes on a Plane': 3.0,
+#  'Superman Returns': 3.5, 'The Night Listener': 4.0},
+# 'Claudia Puig': {'Snakes on a Plane': 3.5, 'Just My Luck': 3.0,
+#  'The Night Listener': 4.5, 'Superman Returns': 4.0,
+#  'You, Me and Dupree': 2.5},
+# 'Mick LaSalle': {'Lady in the Water': 3.0, 'Snakes on a Plane': 4.0,
+#  'Just My Luck': 2.0, 'Superman Returns': 3.0, 'The Night Listener': 3.0,
+#  'You, Me and Dupree': 2.0},
+# 'Jack Matthews': {'Lady in the Water': 3.0, 'Snakes on a Plane': 4.0,
+#  'The Night Listener': 3.0, 'Superman Returns': 5.0, 'You, Me and Dupree': 3.5},
+# 'Toby': {'Snakes on a Plane':4.5,'You, Me and Dupree':1.0,'Superman Returns':4.0}}
+#
+# criticsTest = {'Toby':{'The Night Listener':2, 'Lady in the Water':3,  'Just My Luck': 4}, 'Claudia Puig':{'Lady in the Water':3}}
 
 
 def simDistance(prefs, person1, person2):
@@ -198,9 +198,9 @@ def getRecommendations(prefs,transPrefs, person, n, similarity=simPearson):
     :param prefs:用户评分字典
     :param transPrefs:倒排的评分字典
     :param person:用户person
-    :param n:推荐预测评分最高的前n个物品
+    :param n:邻居的数量
     :param similarity:选择相似度计算方法
-    :return:长度为n的推荐列表
+    :return:已排序的推荐列表
     '''
     global simD
     global COUNTER
@@ -233,6 +233,14 @@ def getRecommendations(prefs,transPrefs, person, n, similarity=simPearson):
     return rankings
 
 def loadData(dataSegNum, expOrder, path=r'E:\USTC\2.Recommendation System\ml-100k'):
+    '''
+    读取单个数据集文件，形成字典形式的训练集与测试集；u.item形成电影名与电影id的映射，u.data为用户对物品的评分数据集；
+    将u.dada数据集分为dataSegNum份，第expOrder份设为测试集，其他份合并设为训练集
+    :param dataSegNum: 数据集的分割份数
+    :param expOrder: 第expOrder份设为测试集
+    :param path: 数据集的路径
+    :return:字典形式的训练集与测试集
+    '''
     global COUNTER
     COUNTER = 0
     train = []
@@ -259,6 +267,11 @@ def loadData(dataSegNum, expOrder, path=r'E:\USTC\2.Recommendation System\ml-100
     return [prefsTrain, prefsTest]
 
 def loadDataFromTwo( path=r'E:\USTC\2.Recommendation System\ml-100k' ):
+    '''
+    分别读取训练集与测试集文件，形成字典形式的训练集与测试集；u.item形成电影名与电影id的映射，ua.base为训练集文件，ua.test为测试集文件；
+    :param path:数据集的路径
+    :return:字典形式的训练集与测试集
+    '''
     global COUNTER
     COUNTER = 0
     train = []
@@ -286,6 +299,17 @@ def loadDataFromTwo( path=r'E:\USTC\2.Recommendation System\ml-100k' ):
     return [prefsTrain, prefsTest]
 
 def eachEval(prefs,transPrefs, person, test, n, topN, similarity=simPearson):
+    '''
+    对每个用户person进行评价计算，为计算RMSE，Precision，Recall做准备
+    :param prefs:用户评分字典（训练集）
+    :param transPrefs:倒排的评分字典
+    :param person:用户person
+    :param test:测试集字典
+    :param n:邻居的数量
+    :param topN:选取推荐列表前topN个项目
+    :param similarity:选择相似度计算方法
+    :return:RMSE计算需要的预测评分与真实评分的平方和以及参与计算的数目；Precision和Recall计算需要的列表元素数量
+    '''
     trainTemp = getRecommendations(prefs,transPrefs, person, n, similarity)
     train = {}
     sum = 0
@@ -322,6 +346,16 @@ def eachEval(prefs,transPrefs, person, test, n, topN, similarity=simPearson):
 
 
 def evaluate(prefs,transPrefs,test, n, topN=20, similarity=simPearson):
+    '''
+    计算RMSE，Precision，Recall，F1值
+    :param prefs: 用户评分字典（训练集）
+    :param transPrefs: 倒排的评分字典
+    :param test: 测试集字典
+    :param n: 邻居的数量
+    :param topN: 选取推荐列表前topN个项目
+    :param similarity: 选择相似度计算方法
+    :return:RMSE，F1值，Precision，Recall
+    '''
     sum = 0
     count = 0
     hit = 0
@@ -351,39 +385,37 @@ def evaluate(prefs,transPrefs,test, n, topN=20, similarity=simPearson):
     return [RMSE, F1, precision, recall]
 
 if __name__ == "__main__":
-    # '''下面是完整评测功能：'''
-    # dataSegNum = 8
-    # nTest = [510,520,530,540,550,560,580,600,620,640,660,680,700,720,740,760,780,800]
-    # for n in nTest:
-    #     RMSE = 0
-    #     F1 = 0
-    #     recall = 0
-    #     precision = 0
-    #     for expOrder in range(dataSegNum):
-    #         (prefsTrain, prefsTest) = loadData(dataSegNum, expOrder)
-    #         transPrefs = transformPrefs(prefsTrain)
-    #         (RMSEEach, F1Each, precisionEach, recallEach) = evaluate(prefsTrain,transPrefs,prefsTest, n, 10, simPearson)
-    #         RMSE += RMSEEach
-    #         F1 += F1Each
-    #         precision += precisionEach
-    #         recall += recallEach
-    #     print [RMSE/dataSegNum, F1/dataSegNum, precision/dataSegNum, recall/dataSegNum]
+    # 下面是完整评测功能（训练集：测试集=(dataSegNum-1):1，为了防止过拟合做dataSegNum次实验，取均值）：
+    dataSegNum = 8
+    RMSE = 0
+    F1 = 0
+    recall = 0
+    precision = 0
+    for expOrder in range(dataSegNum):
+        (prefsTrain, prefsTest) = loadData(dataSegNum, expOrder)
+        transPrefs = transformPrefs(prefsTrain)
+        (RMSEEach, F1Each, precisionEach, recallEach) = evaluate(prefsTrain,transPrefs,prefsTest, 320, 10, simPearson)
+        RMSE += RMSEEach
+        F1 += F1Each
+        precision += precisionEach
+        recall += recallEach
+    print [RMSE/dataSegNum, F1/dataSegNum, precision/dataSegNum, recall/dataSegNum]
 
-    '''下面是单次评测功能：'''
-    # dataSegNum = 8
-    # expOrder = 7
-    (prefsTrain, prefsTest) = loadDataFromTwo()
-    transPrefs = transformPrefs(prefsTrain)
-    print evaluate(prefsTrain,transPrefs,prefsTest, 1000, 20, simDistance)
+    # # 下面是单次评测功能，不做多次实验：
+    # # dataSegNum = 8
+    # # expOrder = 7
+    # (prefsTrain, prefsTest) = loadDataFromTwo()
+    # transPrefs = transformPrefs(prefsTrain)
+    # print evaluate(prefsTrain,transPrefs,prefsTest, 1000, 20, simDistance)
 
-    # '''下面是推荐功能：'''
+    # # 下面是为单个用户进行推荐的功能：
     # dataSegNum = 8
     # expOrder = 7
     # (prefsTrain, prefsTest) = loadData(dataSegNum, expOrder)
     # transPrefs = transformPrefs(prefsTrain)
     # print getRecommendations(prefsTrain,transPrefs, '87', 320, similarity=simCosine)[0:10]
 
-    # '''下面是推荐测正确性验证功能：'''
+    # '''下面是推荐正确性验证功能：'''
     # prefsTrain = critics
     # prefsTest = criticsTest
     # transPrefs = transformPrefs(prefsTrain)
