@@ -8,17 +8,11 @@ import org.lynnc.myhadoop.hdfs.HdfsOperator;
 
 import java.io.IOException;
 
-/**
- * Unit test for simple App.
- */
-public class AppTest {
+public class Demo {
     public static void main (String[] args) throws IOException {
         JobConf conf = Recommend.config();
         HdfsOperator hdfs = new HdfsOperator(conf);
-        hdfs.ls("/user/lynnc/recommend/neighbors");
-        hdfs.cat("/user/lynnc/recommend/neighbors/part-r-00000");
-//        String a = "2\t101:2.0,102:2.5,103:5.0,104:2.0";
-//        String[] tokens = Recommend.DELIMITER.split(a);
-//        System.out.println(tokens[0]);
+        hdfs.ls("/user/lynnc/recommend/step5");
+        hdfs.cat("/user/lynnc/recommend/step5/part-r-00000");
     }
 }

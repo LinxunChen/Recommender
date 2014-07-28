@@ -22,6 +22,9 @@ public class Recommend {
 
         path.put("Trainning set", "/home/lynnc/ua.base");
         path.put("Testing set", "/home/lynnc/ua.test");
+//        path.put("Trainning set", "/home/lynnc/small2.csv");
+//        path.put("Testing set", "/home/lynnc/small2test.csv");
+
         path.put("Step1Input", HDFS + "/user/lynnc/recommend");
         path.put("Step1Output", path.get("Step1Input") + "/step1");
 

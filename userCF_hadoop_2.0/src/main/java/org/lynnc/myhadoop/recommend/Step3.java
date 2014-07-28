@@ -52,12 +52,18 @@ public class Step3 {
         public void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
             double sum_square = 0;
             double sim = 0;
+            int count = 0;
+
             while (values.iterator().hasNext()) {
+                count++;
                 sum_square += Double.parseDouble(values.iterator().next().toString().split(",")[1]);
             }
-            sim = 1/(1+Math.sqrt(sum_square));
-            v.set(sim);
-            context.write(key, v);
+
+            if (count > 2) {    //两个用户有2个以上的相同操作物品，才计算其相似度
+                sim = 1/(1+Math.sqrt(sum_square));
+                v.set(sim);
+                context.write(key, v);
+            }
         }
     }
 

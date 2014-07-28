@@ -30,11 +30,8 @@ public class HdfsOperator {
     private Configuration conf;
 
     public static void main(String[] args) throws IOException {
-        //JobConf conf = config();
         JobConf conf = new JobConf();
         HdfsOperator hdfs = new HdfsOperator(conf);
-        //hdfs.mkdirs("/beta/new");
-        //hdfs.copyFile("/home/lynnc/test.txt", "/user/lynnc");
         hdfs.ls("/user/lynnc");
     }
 

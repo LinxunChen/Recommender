@@ -1,6 +1,7 @@
 package org.lynnc.myhadoop.recommend;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.Job;
@@ -57,9 +58,9 @@ public class Evaluate {
     static int count = 0;
     /* 测试集的输出：reduce过程输入的key是"userID"，value是"T:itemID1,pref"、"T:itemID2,pref"...
      step5的输出：reduce过程输入的key是"userID"，value是"R:itemID1,预测评分"、"R:itemID2,预测评分"...
-    * reduce统计求和，计算RMSE*/
-    public static class EvaluateEachReducer extends Reducer<Text, Text, Text, Text> {
-        private Text k = new Text();
+    * reduce统计求和，计算RMSE:reduce输出的key是"count(参与计算的项目数量)"，value是”该count对应的RMSE“（count最大时对应的RMSE即为所需）*/
+    public static class EvaluateEachReducer extends Reducer<Text, Text, IntWritable, Text> {
+        private IntWritable k = new IntWritable();
         private Text v = new Text();
 
         @Override
@@ -85,7 +86,7 @@ public class Evaluate {
             }
             Double RMSE = Math.sqrt(sum/count);
 
-            k.set("RMSE ");
+            k.set(count);
             v.set(RMSE.toString());
             context.write(k, v);
         }
