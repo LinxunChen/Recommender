@@ -13,7 +13,7 @@ public class Recommend {
     public static final String HDFS = "hdfs://localhost:9000";
     public static final Pattern DELIMITER = Pattern.compile("[\t,]");
 
-    public static double simThreshold = 0.2; //判断用户邻域采用的用户相似度阈值 [0,1]
+    public static double simThreshold = 0.0; //判断用户邻域采用的用户相似度阈值 [0,1]
     public static int RecNum = 20;  //推荐物品的数量
     public static String Person = "7";  //显示该用户的推荐列表
 
@@ -58,7 +58,7 @@ public class Recommend {
 
         Step1.run(path);
         Step2.run(path);
-        Step3.run(path);
+        Step3_2.run(path);
         Step4.run(path);
         Step5.run(path);
         Step6.run(path);
