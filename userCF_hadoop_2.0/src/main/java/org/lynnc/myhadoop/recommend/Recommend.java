@@ -13,7 +13,7 @@ public class Recommend {
     public static final String HDFS = "hdfs://localhost:9000";
     public static final Pattern DELIMITER = Pattern.compile("[\t,]");
 
-    public static double simThreshold = 0.0; //判断用户邻域采用的用户相似度阈值 [0,1]
+    public static double simThreshold = 0.2; //判断用户邻域采用的用户相似度阈值 [0,1]
     public static int RecNum = 20;  //推荐物品的数量
     public static String Person = "7";  //显示该用户的推荐列表
 
@@ -46,9 +46,12 @@ public class Recommend {
         path.put("Step6Input", path.get("Step5Output"));
         path.put("Step6Output", path.get("Step1Input") + "/step6");
 
-        path.put("EvaluateInput1", HDFS + "/user/lynnc/recommend/test");
-        path.put("EvaluateInput2", path.get("Step5Output"));
-        path.put("EvaluateOutput", path.get("Step1Input") + "/evaluation");
+        path.put("EvaluateStep1Input1", HDFS + "/user/lynnc/recommend/test");
+        path.put("EvaluateStep1Input2", path.get("Step5Output"));
+        path.put("EvaluateStep1Output", path.get("Step1Input") + "/temp");
+
+        path.put("EvaluateStep2Input", path.get("EvaluateStep1Output"));
+        path.put("EvaluateStep2Output", path.get("Step1Input") + "/evaluation");
 
         path.put("GetNeighborInput", path.get("Step3Output"));
         path.put("GetNeighborOutput", path.get("Step1Input") + "/neighbors");
@@ -59,7 +62,8 @@ public class Recommend {
         Step4.run(path);
         Step5.run(path);
         Step6.run(path);
-        Evaluate.run(path);
+        EvaluateStep1.run(path);
+        EvaluateStep2.run(path);
         GetNeighbor.run(path);
 
         System.exit(0);

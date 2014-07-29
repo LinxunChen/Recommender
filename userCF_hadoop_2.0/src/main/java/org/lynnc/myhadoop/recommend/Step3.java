@@ -37,14 +37,14 @@ public class Step3 {
                     double pref2 = Double.parseDouble(tokens[j].split(":")[1]);
                     String diff = new Double(Math.pow(pref1-pref2, 2)).toString();
                     k.set(userID + ":" + userID2);
-                    v.set(tokens[0] +"," + diff);
+                    v.set(diff);
                     context.write(k, v);
                 }
             }
         }
     }
 
-    /* reduce过程输入的key是"userID1:userID2"，value是"itemID1, diff"，"itemID2, diff"...; 输出的key是"userID1:userID2"，value是“similarity” （示例） */
+    /* reduce过程输入的key是"userID1:userID2"，value是"diff"，"diff"...; 输出的key是"userID1:userID2"，value是“similarity” （示例） */
     public static class Step3_UserSimilarityMatrixReducer extends Reducer<Text, Text, Text, DoubleWritable> {
         private DoubleWritable v = new DoubleWritable();
 
@@ -56,7 +56,7 @@ public class Step3 {
 
             while (values.iterator().hasNext()) {
                 count++;
-                sum_square += Double.parseDouble(values.iterator().next().toString().split(",")[1]);
+                sum_square += Double.parseDouble(values.iterator().next().toString());
             }
 
             if (count > 2) {    //两个用户有2个以上的相同操作物品，才计算其相似度

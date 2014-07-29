@@ -1,7 +1,6 @@
 package org.lynnc.myhadoop.recommend;
 
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.Job;
@@ -17,8 +16,8 @@ import org.lynnc.myhadoop.hdfs.HdfsOperator;
 import java.io.IOException;
 import java.util.*;
 
-/* Evaluate负责计算推荐结果的均方误差 */
-public class Evaluate {
+/* EvaluateStep1负责计算每个用户产生的评分平方差的和以及计算数目 */
+public class EvaluateStep1 {
 
     /* 测试集的输出：map过程输入的是"userID,itemID,pref“；输出的key是"userID"，value是"T:itemID,pref"
     * step5的输出：map过程输入的是"userID   itemID1:预测评分，itemID2:预测评分，itemID3:预测评分"；输出的key是"userID"，value是"R:itemID1,预测评分"*/
@@ -56,17 +55,17 @@ public class Evaluate {
 
     /* 测试集的输出：reduce过程输入的key是"userID"，value是"T:itemID1,pref"、"T:itemID2,pref"...
      step5的输出：reduce过程输入的key是"userID"，value是"R:itemID1,预测评分"、"R:itemID2,预测评分"...
-    * reduce统计求和，计算RMSE:reduce输出的key是"count(参与计算的项目数量)"，value是”该count对应的RMSE“（count最大时对应的RMSE即为所需）*/
-    public static class EvaluateEachReducer extends Reducer<Text, Text, IntWritable, Text> {
-        private IntWritable k = new IntWritable();
+    * reduce输出的key是"R"，value是”sum, count"*/
+    public static class EvaluateEachReducer extends Reducer<Text, Text, Text, Text> {
+        private Text k = new Text("R");
         private Text v = new Text();
-        private double sum = 0;
-        private int count = 0;
 
         @Override
         public void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
             Map<String, Double> mapR = new HashMap();
             Map<String, Double> mapT = new HashMap();
+            double sum = 0;
+            int count = 0;
 
             for (Text line : values) {
                 if (line.toString().startsWith("T")) {
@@ -84,10 +83,8 @@ public class Evaluate {
                     count++;
                 }
             }
-            Double RMSE = Math.sqrt(sum/count);
 
-            k.set(count);
-            v.set(RMSE.toString());
+            v.set(new Double(sum).toString() + "," +  new Integer(count).toString());
             context.write(k, v);
         }
     }
@@ -95,9 +92,9 @@ public class Evaluate {
     public static void run(Map<String, String> path) throws IOException, InterruptedException, ClassNotFoundException {
         JobConf conf = Recommend.config();
 
-        String input1 = path.get("EvaluateInput1");
-        String input2 = path.get("EvaluateInput2");
-        String output = path.get("EvaluateOutput");
+        String input1 = path.get("EvaluateStep1Input1");
+        String input2 = path.get("EvaluateStep1Input2");
+        String output = path.get("EvaluateStep1Output");
 
         HdfsOperator hdfs = new HdfsOperator(Recommend.HDFS, conf);
         hdfs.rmr(output);
@@ -106,13 +103,13 @@ public class Evaluate {
         hdfs.copyFile(path.get("Testing set"), input1);
 
         Job job = new Job(conf);
-        job.setJarByClass(Evaluate.class);
+        job.setJarByClass(EvaluateStep1.class);
 
         job.setOutputKeyClass(Text.class);
         job.setOutputValueClass(Text.class);
 
-        job.setMapperClass(Evaluate.EvaluateEachMapper.class);
-        job.setReducerClass(Evaluate.EvaluateEachReducer.class);
+        job.setMapperClass(EvaluateStep1.EvaluateEachMapper.class);
+        job.setReducerClass(EvaluateStep1.EvaluateEachReducer.class);
 
         job.setInputFormatClass(TextInputFormat.class);
         job.setOutputFormatClass(TextOutputFormat.class);
