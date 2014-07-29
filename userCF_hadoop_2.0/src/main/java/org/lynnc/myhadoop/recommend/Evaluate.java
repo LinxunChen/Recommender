@@ -54,14 +54,14 @@ public class Evaluate {
         }
     }
 
-    static double sum = 0;
-    static int count = 0;
     /* 测试集的输出：reduce过程输入的key是"userID"，value是"T:itemID1,pref"、"T:itemID2,pref"...
      step5的输出：reduce过程输入的key是"userID"，value是"R:itemID1,预测评分"、"R:itemID2,预测评分"...
     * reduce统计求和，计算RMSE:reduce输出的key是"count(参与计算的项目数量)"，value是”该count对应的RMSE“（count最大时对应的RMSE即为所需）*/
     public static class EvaluateEachReducer extends Reducer<Text, Text, IntWritable, Text> {
         private IntWritable k = new IntWritable();
         private Text v = new Text();
+        private double sum = 0;
+        private int count = 0;
 
         @Override
         public void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
@@ -121,8 +121,5 @@ public class Evaluate {
         FileOutputFormat.setOutputPath(job, new Path(output));
 
         job.waitForCompletion(true);
-
-        double RMSE = Math.sqrt(sum/count);
-        System.out.println("RMSE is " + RMSE);
     }
 }
