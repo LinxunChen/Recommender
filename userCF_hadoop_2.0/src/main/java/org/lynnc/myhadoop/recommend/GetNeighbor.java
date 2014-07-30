@@ -52,10 +52,16 @@ public class GetNeighbor {
 
             /* 对mapSim进行按value的降序排序，得到orderedMap */
             ArrayList<Map.Entry<String, Double>> list = new ArrayList<Map.Entry<String, Double>>(mapSim.entrySet());
+//            Collections.sort(list, new Comparator<Map.Entry<String, Double>>() {
+//                @Override
+//                public int compare(Map.Entry<String, Double> arg0, Map.Entry<String, Double> arg1) {
+//                    return (int) ((arg1.getValue() - arg0.getValue()) * 10000);
+//                }
+//            });
             Collections.sort(list, new Comparator<Map.Entry<String, Double>>() {
                 @Override
                 public int compare(Map.Entry<String, Double> arg0, Map.Entry<String, Double> arg1) {
-                    return (int) ((arg1.getValue() - arg0.getValue()) * 10000);
+                    return (int)((arg1.getValue() - arg0.getValue()) * 10000);
                 }
             });
 

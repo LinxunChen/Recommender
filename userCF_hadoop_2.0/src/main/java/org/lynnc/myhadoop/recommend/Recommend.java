@@ -20,8 +20,8 @@ public class Recommend {
     public static void main( String[] args ) throws InterruptedException, ClassNotFoundException, IOException{
         Map<String, String> path = new HashMap();
 
-        path.put("Trainning set", "/home/lynnc/ua.base");
-        path.put("Testing set", "/home/lynnc/ua.test");
+        path.put("Trainning set", "/home/lynnc/ua.base");   //输入训练集
+        path.put("Testing set", "/home/lynnc/ua.test");     //输入测试集
 //        path.put("Trainning set", "/home/lynnc/small2.csv");
 //        path.put("Testing set", "/home/lynnc/small2test.csv");
 
@@ -58,7 +58,8 @@ public class Recommend {
 
         Step1.run(path);
         Step2.run(path);
-        Step3_2.run(path);
+        Step3_EuclideanDistance.run(path);
+//        Step3_CosineMeasure.run(path);
         Step4.run(path);
         Step5.run(path);
         Step6.run(path);

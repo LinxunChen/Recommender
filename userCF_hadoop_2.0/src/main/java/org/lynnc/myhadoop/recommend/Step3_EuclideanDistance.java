@@ -19,7 +19,7 @@ import java.nio.file.FileSystemNotFoundException;
 import java.util.Map;
 
 /* Step3 负责生成用户的相似度矩阵（基于欧氏距离） */
-public class Step3_2 {
+public class Step3_EuclideanDistance {
 
     /* map过程输入的是“itemID  userID1:评分,userID2:评分,userID3:评分..."; 输出的key是"userID1:userID2"...，value是"itemID, diff" */
     public static class Step3_UserSimilarityMatrixMapper extends Mapper<Object, Text, Text, Text> {
@@ -35,12 +35,9 @@ public class Step3_2 {
                 for (int j = 1; j < tokens.length; j++) {
                     String userID2 = tokens[j].split(":")[0];
                     double pref2 = Double.parseDouble(tokens[j].split(":")[1]);
-                    String product = new Double(pref1 * pref2).toString();
-                    String powPref1 = new Double(Math.pow(pref1, 2)).toString();
-                    String powPref2 = new Double(Math.pow(pref2, 2)).toString();
-
+                    String diff = new Double(Math.pow(pref1-pref2, 2)).toString();
                     k.set(userID + ":" + userID2);
-                    v.set(product + "," + powPref1 +"," + powPref2);
+                    v.set(diff);
                     context.write(k, v);
                 }
             }
@@ -53,22 +50,17 @@ public class Step3_2 {
 
         @Override
         public void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
-            double fenzi = 0;
-            double fenmu1 = 0;
-            double fenmu2 = 0;
+            double sum_square = 0;
             double sim = 0;
             int count = 0;
 
             while (values.iterator().hasNext()) {
-                String temp = values.iterator().next().toString();
                 count++;
-                fenzi += Double.parseDouble(temp.split(",")[0]);
-                fenmu1 += Double.parseDouble(temp.split(",")[1]);
-                fenmu2 += Double.parseDouble(temp.split(",")[2]);
+                sum_square += Double.parseDouble(values.iterator().next().toString());
             }
 
-            if (count > 0) {    //两个用户有2个以上的相同操作物品，才计算其相似度
-                sim = fenzi/(Math.sqrt(fenmu1)*Math.sqrt(fenmu2));
+            if (count > 2) {    //两个用户有2个以上的相同操作物品，才计算其相似度
+                sim = 1/(1+Math.sqrt(sum_square));
                 v.set(sim);
                 context.write(key, v);
             }
@@ -86,13 +78,13 @@ public class Step3_2 {
         hdfs.rmr(output);
 
         Job job = new Job(conf);
-        job.setJarByClass(Step3_2.class);
+        job.setJarByClass(Step3_EuclideanDistance.class);
 
         job.setOutputKeyClass(Text.class);
         job.setOutputValueClass(Text.class);
 
-        job.setMapperClass(Step3_2.Step3_UserSimilarityMatrixMapper.class);
-        job.setReducerClass(Step3_2.Step3_UserSimilarityMatrixReducer.class);
+        job.setMapperClass(Step3_EuclideanDistance.Step3_UserSimilarityMatrixMapper.class);
+        job.setReducerClass(Step3_EuclideanDistance.Step3_UserSimilarityMatrixReducer.class);
 
         job.setInputFormatClass(TextInputFormat.class);
         job.setOutputFormatClass(TextOutputFormat.class);
