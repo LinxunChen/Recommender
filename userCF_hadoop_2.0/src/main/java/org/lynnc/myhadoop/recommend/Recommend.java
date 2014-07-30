@@ -1,7 +1,7 @@
 package org.lynnc.myhadoop.recommend;
 
 
-import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.conf.Configuration;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -70,9 +70,8 @@ public class Recommend {
         System.exit(0);
     }
 
-    public static JobConf config() {
-        JobConf conf = new JobConf(Recommend.class);
-        conf.setJobName("Recommend");
+    public static Configuration config() {
+        Configuration conf = new Configuration();
         conf.addResource("classpath:/hadoop/core-site.xml");
         conf.addResource("classpath:/hadoop/hdfs-site.xml");
         conf.addResource("classpath:/hadoop/mapred-site.xml");

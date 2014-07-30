@@ -1,9 +1,9 @@
 package org.lynnc.myhadoop.recommend;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
@@ -77,7 +77,7 @@ public class Step3_CosineMeasure {
 
     public static void run(Map<String, String> path) throws FileSystemNotFoundException, IOException, InterruptedException, ClassNotFoundException {
 
-        JobConf conf = Recommend.config();
+        Configuration conf = Recommend.config();
 
         String input = path.get("Step3Input");
         String output = path.get("Step3Output");
@@ -85,7 +85,7 @@ public class Step3_CosineMeasure {
         HdfsOperator hdfs = new HdfsOperator(Recommend.HDFS, conf);
         hdfs.rmr(output);
 
-        Job job = new Job(conf);
+        Job job = new Job(conf, "Step3");
         job.setJarByClass(Step3_CosineMeasure.class);
 
         job.setOutputKeyClass(Text.class);

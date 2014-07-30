@@ -1,9 +1,9 @@
 package org.lynnc.myhadoop.recommend;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
@@ -13,8 +13,6 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.lynnc.myhadoop.hdfs.HdfsOperator;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.FileSystemNotFoundException;
 import java.util.*;
@@ -57,7 +55,7 @@ public class Step1 {
 
     public static void run(Map<String, String> path) throws FileSystemNotFoundException, IOException, InterruptedException, ClassNotFoundException {
 
-        JobConf conf = Recommend.config();
+        Configuration conf = Recommend.config();
 
         String input = path.get("Step1Input");
         String output = path.get("Step1Output");
@@ -67,7 +65,7 @@ public class Step1 {
         hdfs.mkdirs(input);
         hdfs.copyFile(path.get("Trainning set"), input);
 
-        Job job = new Job(conf);
+        Job job = new Job(conf, "Step1");
         job.setJarByClass(Step1.class);
 
         job.setOutputKeyClass(IntWritable.class);

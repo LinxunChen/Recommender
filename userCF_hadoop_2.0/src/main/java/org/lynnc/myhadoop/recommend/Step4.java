@@ -1,8 +1,8 @@
 package org.lynnc.myhadoop.recommend;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
@@ -107,7 +107,7 @@ public class Step4 {
     }
 
     public static void run(Map<String, String> path) throws IOException, InterruptedException, ClassNotFoundException {
-        JobConf conf = Recommend.config();
+        Configuration conf = Recommend.config();
 
         String input1 = path.get("Step4Input1");
         String input2 = path.get("Step4Input2");
@@ -116,7 +116,7 @@ public class Step4 {
         HdfsOperator hdfs = new HdfsOperator(Recommend.HDFS, conf);
         hdfs.rmr(output);
 
-        Job job = new Job(conf);
+        Job job = new Job(conf, "Step4");
         job.setJarByClass(Step4.class);
 
         job.setOutputKeyClass(Text.class);

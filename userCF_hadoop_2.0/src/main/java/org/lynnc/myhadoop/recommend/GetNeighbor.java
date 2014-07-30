@@ -1,8 +1,8 @@
 package org.lynnc.myhadoop.recommend;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
@@ -86,7 +86,7 @@ public class GetNeighbor {
 
     public static void run(Map<String, String> path) throws FileSystemNotFoundException, IOException, InterruptedException, ClassNotFoundException {
 
-        JobConf conf = Recommend.config();
+        Configuration conf = Recommend.config();
 
         String input = path.get("GetNeighborInput");
         String output = path.get("GetNeighborOutput");
@@ -94,7 +94,7 @@ public class GetNeighbor {
         HdfsOperator hdfs = new HdfsOperator(Recommend.HDFS, conf);
         hdfs.rmr(output);
 
-        Job job = new Job(conf);
+        Job job = new Job(conf, "GetNeighbor");
         job.setJarByClass(GetNeighbor.class);
 
         job.setOutputKeyClass(Text.class);
