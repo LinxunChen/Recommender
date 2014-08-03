@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
 
 public class Recommend {
 
-    public static final String HDFS = "hdfs://localhost:9000";
+    public static final String HDFS = "hdfs://master:9000";
     public static final Pattern DELIMITER = Pattern.compile("[\t,]");
 
     public static double simThreshold = 0.0; //判断用户邻域采用的用户相似度阈值 [0,1]
